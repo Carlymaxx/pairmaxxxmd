@@ -184,7 +184,7 @@ setInterval(() => {
   } catch (e) {
     console.error('Cleanup error', e);
   }
-}, 10 * 60 * 1000); // every 10 minutes
+}, 10 * 60 * 1000); // every 11 minutes
 
 // --- Start Express server ---
 app.listen(PORT, () => console.log(`🚀 MAXX-XMD server listening on port ${PORT}`));
