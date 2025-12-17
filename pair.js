@@ -5,7 +5,11 @@ const express = require("express");
 const cors = require("cors");
 
 // Import your original bot
-const bot = require("./index.js"); // <-- your original index.js bot
+const bot = require("./index.js");
+
+// Call startBot
+bot.startBot().catch(console.error);
+ // <-- your original index.js bot
 
 // --- Constants ---
 const PORT = process.env.PORT || 3000;
