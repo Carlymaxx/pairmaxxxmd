@@ -4,8 +4,8 @@ const fs = require('fs');
 const express = require("express");
 const cors = require("cors");
 
-// Import your bot functions
-const { startBot, handleIncomingMessage } = require("./index.js");
+// Import your bot starter
+const { startBot } = require("./index.js");
 
 // --- Constants ---
 const PORT = process.env.PORT || 3000;
@@ -29,39 +29,34 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public"))); // serve dashboard
 
-// --- Bot session manager ---
-const botSessions = {}; // store multiple sessions
+// --- Multi-session bot manager ---
+const botSessions = {}; // { sessionId: socket }
 
-async function startBotSession(sessionName = 'default') {
+// Start bot session for a user
+async function startBotSession(sessionId) {
+    if (botSessions[sessionId]) return botSessions[sessionId]; // already running
+
     try {
-        const sock = await startBot(); // calls startBot from index.js
-        botSessions[sessionName] = sock;
-        console.log(`✅ MAXX-XMD bot connected for session "${sessionName}"`);
-
-        // Hook into incoming messages
-        sock.ev.on('messages.upsert', async (m) => {
-            const msg = m[0];
-            if (msg) handleIncomingMessage(sock, msg); // optional custom handler
-        });
-
+        const sock = await startBot();
+        botSessions[sessionId] = sock;
+        console.log(`✅ Session ${sessionId} connected`);
         return sock;
     } catch (err) {
-        console.error("❌ Bot startup error:", err);
+        console.error(`❌ Bot startup error for ${sessionId}:`, err);
+        throw err;
     }
 }
 
-// Start default bot session
-startBotSession('default');
-
 // --- Helper to send WhatsApp message ---
-async function sendWhatsApp(number, message, sessionName = 'default') {
-    const sock = botSessions[sessionName];
-    if (!sock) throw new Error(`Bot session "${sessionName}" not ready`);
+async function sendWhatsApp(sessionId, number, message) {
+    const sock = botSessions[sessionId];
+    if (!sock) throw new Error('Bot session not ready');
     const jid = number.includes('@') ? number : number + '@s.whatsapp.net';
     return await sock.sendMessage(jid, { text: message });
 }
 
 // --- Routes ---
+
 // 1️⃣ Generate verification code
 app.post('/generate', async (req, res) => {
     try {
@@ -77,7 +72,7 @@ app.post('/generate', async (req, res) => {
         writeDB(db);
 
         const message = `🔐 MAXX-XMD VERIFICATION CODE\nYour code: *${code}*\nOwner: ${BOT_OWNER}\nDeveloper: ${BOT_DEV}`;
-        await sendWhatsApp(number, message);
+        await sendWhatsApp('main', number, message); // 'main' session sends verification
 
         res.json({ message: 'Verification code sent to WhatsApp ✅' });
     } catch (e) {
@@ -105,15 +100,18 @@ app.post('/verify', async (req, res) => {
         user.code = null;
         writeDB(db);
 
-        await sendWhatsApp(number, `✅ MAXX-XMD session generated!\nSession ID: ${sessionId}\nValid 24h`);
-        res.json({ message: 'Verification successful! Session sent to WhatsApp', sessionId });
+        // Start a new bot session for this user
+        await startBotSession(sessionId);
+
+        await sendWhatsApp(sessionId, number, `✅ MAXX-XMD session generated!\nSession ID: ${sessionId}\nValid 24h`);
+        res.json({ message: 'Verification successful! Session started', sessionId });
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
-// 3️⃣ Cleanup expired sessions
+// 3️⃣ Cleanup expired sessions every 10 min
 setInterval(() => {
     try {
         const db = readDB();
@@ -123,18 +121,27 @@ setInterval(() => {
                 const num = db.sessions[sid].number;
                 if (db.users[num]) db.users[num].session = db.users[num].sessionExpiresAt = null;
                 delete db.sessions[sid];
+
+                // Remove bot session
+                if (botSessions[sid]) {
+                    delete botSessions[sid];
+                    console.log(`🗑 Session ${sid} expired and removed`);
+                }
             }
         }
         writeDB(db);
     } catch (e) {
         console.error('Cleanup error', e);
     }
-}, 10 * 60 * 1000); // every 10 min
+}, 10 * 60 * 1000);
 
-// --- Status route ---
+// 4️⃣ Status route
 app.get('/status', (req, res) => {
-    const connected = Object.values(botSessions).some(sock => sock.ws?.readyState === 1);
-    res.json({ connected });
+    const status = {};
+    for (const sid in botSessions) {
+        status[sid] = botSessions[sid]?.ws?.readyState === 1;
+    }
+    res.json({ sessions: status });
 });
 
 // --- Start server ---
