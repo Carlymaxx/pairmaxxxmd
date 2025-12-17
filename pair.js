@@ -12,7 +12,6 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
-const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
