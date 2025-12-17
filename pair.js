@@ -4,12 +4,8 @@ const fs = require('fs');
 const express = require("express");
 const cors = require("cors");
 
-// Import your original bot
-const bot = require("./index.js");
-
-// Call startBot
-bot.startBot().catch(console.error);
- // <-- your original index.js bot
+// Import your refactored index.js bot
+const { startMultiBot, handleIncomingMessage } = require("./index.js");
 
 // --- Constants ---
 const PORT = process.env.PORT || 3000;
@@ -33,26 +29,33 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public"))); // serve dashboard
 
-// --- Bot instance ---
-let sock;
-async function startBot() {
+// --- Bot instances (multi-session support) ---
+const botSessions = {}; // store socks by session name
+
+async function startBot(sessionName = 'default') {
     try {
-        sock = await bot.startBot(); // assumes your index.js exports startBot()
-        console.log("✅ MAXX-XMD bot connected");
+        const sock = await startMultiBot(sessionName);
+        botSessions[sessionName] = sock;
+        console.log(`✅ MAXX-XMD bot connected for session "${sessionName}"`);
+
+        // Hook into incoming messages
+        sock.ev.on('messages.upsert', async (m) => handleIncomingMessage(sock, m.messages[0]));
+        return sock;
     } catch (err) {
         console.error("❌ Bot startup error:", err);
     }
 }
-startBot();
 
 // --- Status route ---
 app.get('/status', (req, res) => {
-    res.json({ connected: sock ? sock.ws?.readyState === 1 : false });
+    const connected = Object.values(botSessions).some(sock => sock?.ws?.readyState === 1);
+    res.json({ connected });
 });
 
 // --- Helper to send WhatsApp message ---
-async function sendWhatsApp(number, message) {
-    if (!sock) throw new Error('Bot not ready');
+async function sendWhatsApp(number, message, sessionName = 'default') {
+    const sock = botSessions[sessionName];
+    if (!sock) throw new Error(`Bot session "${sessionName}" not ready`);
     const jid = number.includes('@') ? number : number + '@s.whatsapp.net';
     return await sock.sendMessage(jid, { text: message });
 }
@@ -102,7 +105,10 @@ app.post('/verify', async (req, res) => {
         user.code = null;
         writeDB(db);
 
-        await sendWhatsApp(number, `✅ MAXX-XMD session generated!\nSession ID: ${sessionId}\nValid 24h`);
+        // Start bot session automatically
+        await startBot(sessionId);
+
+        await sendWhatsApp(number, `✅ MAXX-XMD session generated!\nSession ID: ${sessionId}\nValid 24h`, sessionId);
         res.json({ message: 'Verification successful! Session sent to WhatsApp', sessionId });
     } catch (e) {
         console.error(e);
@@ -120,6 +126,9 @@ setInterval(() => {
                 const num = db.sessions[sid].number;
                 if (db.users[num]) db.users[num].session = db.users[num].sessionExpiresAt = null;
                 delete db.sessions[sid];
+
+                // Remove bot session if exists
+                if (botSessions[sid]) delete botSessions[sid];
             }
         }
         writeDB(db);
@@ -130,3 +139,6 @@ setInterval(() => {
 
 // --- Start server ---
 app.listen(PORT, () => console.log(`🚀 MAXX-XMD server listening on port ${PORT}`));
+
+// --- Automatically start default session ---
+startBot('default').catch(console.error);
