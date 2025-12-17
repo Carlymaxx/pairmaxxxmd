@@ -37,6 +37,7 @@ async function startBotSession(sessionId) {
     if (activeSessions[sessionId]) return activeSessions[sessionId];
 
     try {
+        // Call index.js multi-session bot function
         const sock = await bot.startBotSession(sessionId);
         activeSessions[sessionId] = sock;
         console.log(`✅ [${sessionId}] Bot connected`);
