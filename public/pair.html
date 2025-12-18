@@ -89,6 +89,7 @@ input.plain-input {
   margin: 5px;
   background: #001020;
   color: #00ffff;
+  box-shadow: 0 0 10px #00ffff30;
 }
 
 input.plain-input::placeholder {
@@ -140,7 +141,7 @@ button:hover {
 <!-- Generate button -->
 <button id="generate">Generate MAXX XMD Code</button>
 
-<div id="box">
+<div id="box" style="display:none;">
   <div>
     <p>Copy this code and link WhatsApp</p>
     <div id="code">--------</div>
@@ -188,10 +189,10 @@ document.getElementById("generate").onclick = () => {
   const number = document.getElementById("phone").value.trim();
 
   if(!name) return alert("Enter your name");
-  if(!number.startsWith('254')) return alert("Number not valid. Must start with country code (e.g., 254...)");
+  if(!number.startsWith('254') || isNaN(number)) return alert("Number not valid. Must start with country code (e.g., 254...) and contain only digits");
 
-  document.getElementById('status').innerText = "Generating...";
-  
+  document.getElementById('status').innerText = "Generating MAXX Code...";
+
   setTimeout(() => {
     currentCode = randomCode();
     document.getElementById('code').innerText = currentCode;
