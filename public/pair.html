@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💠 MAXX~XMD Dashboard</title>
+<title>💠 MAXX~XMD DASHBORD</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
 
@@ -77,8 +77,8 @@ h1 {
   margin-bottom: 8px;
 }
 
-/* Inputs as rainbow buttons */
-input.glow-input {
+/* Plain inputs for name and number */
+input.plain-input {
   width: 220px;
   padding: 12px;
   border-radius: 10px;
@@ -86,24 +86,17 @@ input.glow-input {
   font-weight: bold;
   text-align: center;
   font-size: 16px;
-  background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
-  color: #000;
-  box-shadow: 0 0 15px #00ffffaa;
-  animation: rainbowGlow 3s linear infinite;
   margin: 5px;
+  background: #001020;
+  color: #00ffff;
+  box-shadow: 0 0 10px #00ffff30;
 }
 
-input.glow-input::placeholder {
-  color: #000;
-  font-weight: bold;
+input.plain-input::placeholder {
+  color: #00ffff;
 }
 
-@keyframes rainbowGlow {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
-}
-
-/* Copy button */
+/* Rainbow glowing button */
 button {
   padding: 14px 20px;
   border-radius: 10px;
@@ -123,6 +116,11 @@ button:hover {
   box-shadow: 0 0 25px #00ffffcc;
 }
 
+@keyframes rainbowGlow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
 #status {
   margin-top: 15px;
   font-weight: bold;
@@ -134,11 +132,14 @@ button:hover {
 
 <h1>💠 MAXX~XMD Dashboard</h1>
 
-<!-- Editable Name and Number as rainbow buttons -->
+<!-- Editable Name and Number as plain inputs -->
 <div id="inputs">
-  <input class="glow-input" type="text" id="name" placeholder="Name e.g., Maxx" />
-  <input class="glow-input" type="text" id="phone" placeholder="Number e.g., 254725979273" />
+  <input class="plain-input" type="text" id="name" placeholder="Name e.g., Maxx" />
+  <input class="plain-input" type="text" id="phone" placeholder="Number e.g., 254725979273" />
 </div>
+
+<!-- Generate button -->
+<button id="generate">Generate MAXX XMD Code</button>
 
 <div id="box">
   <div>
@@ -146,7 +147,7 @@ button:hover {
     <div id="code">--------</div>
     <div id="timer">Expires in: 00:00</div>
   </div>
-  <button id="copy">Copy Maxx XMD Code</button>
+  <button id="copy">Copy MAXX XMD Code</button>
 </div>
 
 <p id="status"></p>
@@ -182,14 +183,22 @@ function randomCode(len=8){
   return code;
 }
 
-// Generate new code automatically
-window.onload = ()=>{
+// Generate code on button click
+document.getElementById("generate").onclick = () => {
+  const name = document.getElementById("name").value.trim();
+  const number = document.getElementById("phone").value.trim();
+  if(!name) return alert("Enter your name");
+  if(!number) return alert("Enter your number");
+
   currentCode = randomCode();
-  document.getElementById('code').innerText=currentCode;
+  document.getElementById('code').innerText = currentCode;
+  document.getElementById('box').style.display = "flex";
   startTimer(300); // 5 mins countdown
+  document.getElementById('status').innerText = "✅ Code generated. Copy & link WhatsApp.";
 };
 
-document.getElementById("copy").onclick=()=>{
+// Copy code button
+document.getElementById("copy").onclick = () => {
   if(!currentCode) return;
   navigator.clipboard.writeText(currentCode);
   alert("✅ MAXX XMD code copied");
