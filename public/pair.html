@@ -27,7 +27,7 @@ body {
 /* Code Box */
 #box {
   width: 340px;
-  height: 160px;
+  height: 170px;
   border-radius: 14px;
   display: flex;
   flex-direction: column;
@@ -66,21 +66,29 @@ body {
   font-weight: bold;
 }
 
+/* Rainbow glowing buttons */
 button {
   padding: 12px 18px;
   border-radius: 8px;
   border: none;
   font-weight: bold;
   cursor: pointer;
-  background: linear-gradient(90deg,#00ffff,#0088ff);
+  background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
   color: #000;
-  transition: all 0.2s ease;
-  box-shadow: 0 0 10px #00ffff50;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px #00ffffaa;
+  animation: rainbowGlow 3s linear infinite;
 }
 
 button:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 20px #00ffffaa;
+  box-shadow: 0 0 25px #00ffffcc;
+}
+
+/* Rainbow glow animation */
+@keyframes rainbowGlow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
 }
 
 input {
@@ -107,7 +115,12 @@ input {
 
 <h1>💠 MAXX~XMD Dashboard</h1>
 
-<input id="phone" placeholder="Enter WhatsApp number" />
+<!-- Name input -->
+<input id="name" placeholder="Enter your name e.g., Maxx" />
+
+<!-- WhatsApp number input -->
+<input id="phone" placeholder="Put your number starting with country code e.g., 254725979273" />
+
 <button id="generate">Generate Maxx XMD Code</button>
 
 <div id="box" style="display:none;">
@@ -154,13 +167,16 @@ function randomCode(len=8){
 
 document.getElementById("generate").onclick=async()=>{
   const number=document.getElementById("phone").value.trim();
+  const name=document.getElementById("name").value.trim();
   if(!number) return alert("Enter WhatsApp number");
+  if(!name) return alert("Enter your name");
+  
   document.getElementById("status").innerText="Generating code...";
   try{
     const res=await fetch("/generate",{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ number })
+      body:JSON.stringify({ number, name })
     });
     const data=await res.json();
     if(!data.success){
