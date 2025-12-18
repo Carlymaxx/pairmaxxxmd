@@ -25,6 +25,8 @@ const writeDB = (d) => fs.writeFileSync(DB_FILE, JSON.stringify(d, null, 2));
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
 
 /* START MAIN BOT */
 bot.startBotSession("main").catch(console.error);
@@ -84,6 +86,6 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 /* START SERVER */
-app.listen(PORT, () => {
-  console.log(`🚀 MAXX-XMD server running on port ${PORT}`);
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "pair.html"));
 });
