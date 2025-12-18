@@ -11,19 +11,11 @@ const SESSION_PREFIX = process.env.SESSION_PREFIX || "MAXX-XMD";
 
 const DB_FILE = path.join(__dirname, "db.json");
 const SESSIONS_DIR = path.join(__dirname, "sessions");
-const path = require("path");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// 🔥 SERVE DASHBOARD
 app.use(express.static(path.join(__dirname, "public")));
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "pair.html"));
-});
-
 
 /* INIT STORAGE */
 if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR);
@@ -34,19 +26,12 @@ if (!fs.existsSync(DB_FILE)) {
 const readDB = () => JSON.parse(fs.readFileSync(DB_FILE));
 const writeDB = (d) => fs.writeFileSync(DB_FILE, JSON.stringify(d, null, 2));
 
-/* EXPRESS */
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
-
-
 /* START MAIN BOT */
 bot.startBotSession("main").catch(console.error);
 
 /* ROOT */
 app.get("/", (req, res) => {
-  res.send("<h1>MAXX-XMD ONLINE ✅</h1>");
+  res.sendFile(path.join(__dirname, "public", "pair.html"));
 });
 
 /* CREATE SESSION */
@@ -99,12 +84,6 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 /* START SERVER */
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "pair.html"));
-});
-const PORT = process.env.PORT || 10000;
-
 app.listen(PORT, () => {
   console.log(`🚀 MAXX-XMD server running on port ${PORT}`);
 });
-
