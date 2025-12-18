@@ -45,12 +45,13 @@ button {
   padding: 15px;
   margin-top: 15px;
   text-align: center;
+  display: none;
 }
 
 #code {
-  font-size: 26px;
+  font-size: 28px;
   letter-spacing: 6px;
-  margin-top: 10px;
+  margin: 12px 0;
   color: #00ffcc;
 }
 
@@ -65,16 +66,12 @@ small { opacity: 0.8; }
 <input id="phone" placeholder="Enter WhatsApp number" />
 <button id="generate">Generate Maxx XMD Code</button>
 
-<div id="box" style="display:none;">
+<div id="box">
   <p>Copy this code and link WhatsApp</p>
-  <div id="code"></div>
-  <button onclick="copyCode()">Copy Code</button>
+  <div id="code">--------</div>
+  <button id="copy">Copy Code</button>
+  <small>Code expires in 5 minutes</small>
 </div>
-
-<br>
-
-<input id="verifyCode" placeholder="Paste code after linking" />
-<button id="verify">Verify & Send Session</button>
 
 <p id="status"></p>
 
@@ -82,43 +79,38 @@ small { opacity: 0.8; }
 let currentCode = "";
 
 document.getElementById("generate").onclick = async () => {
-  const number = phone.value.trim();
-  if (!number) return alert("Enter number");
+  const number = document.getElementById("phone").value.trim();
+  if (!number) return alert("Enter WhatsApp number");
 
-  const res = await fetch("/generate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ number })
-  });
+  document.getElementById("status").innerText = "Generating code...";
 
-  const data = await res.json();
-  if (!data.success) return alert(data.error);
+  try {
+    const res = await fetch("/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ number })
+    });
 
-  currentCode = data.code;
-  document.getElementById("code").innerText = data.code;
-  document.getElementById("box").style.display = "block";
+    const data = await res.json();
+    if (!data.success) {
+      document.getElementById("status").innerText = data.error;
+      return;
+    }
+
+    currentCode = data.code;
+    document.getElementById("code").innerText = data.code;
+    document.getElementById("box").style.display = "block";
+    document.getElementById("status").innerText =
+      "✅ Code generated. Copy & link WhatsApp.";
+  } catch (e) {
+    document.getElementById("status").innerText = "❌ Server error";
+  }
 };
 
-function copyCode() {
+document.getElementById("copy").onclick = () => {
+  if (!currentCode) return;
   navigator.clipboard.writeText(currentCode);
-  alert("Code copied");
-}
-
-document.getElementById("verify").onclick = async () => {
-  const number = phone.value.trim();
-  const code = verifyCode.value.trim();
-
-  if (!number || !code) return alert("Missing data");
-
-  const res = await fetch("/verify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ number, code })
-  });
-
-  const data = await res.json();
-  document.getElementById("status").innerText =
-    data.success ? "✅ Session ID sent to WhatsApp" : data.error;
+  alert("Code copied successfully");
 };
 </script>
 
