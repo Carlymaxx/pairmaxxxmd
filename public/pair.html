@@ -1,46 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAXX~XMD Dashboard</title>
-
+<title>💠 MAXX~XMD Dashboard</title>
 <style>
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes float {
-  0% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
-  50% { transform: translateY(-20px) rotate(180deg); opacity: 0.6; }
-  100% { transform: translateY(0px) rotate(360deg); opacity: 0.3; }
-}
-
 body {
+  margin: 0;
   font-family: Poppins, sans-serif;
-  background: radial-gradient(circle at center, #000015, #000);
+  background: #000;
   color: #00fff2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  justify-content: flex-start;
+  min-height: 100vh;
   overflow: hidden;
+  padding: 20px;
 }
 
 /* Floating stickers */
 .sticker {
   position: absolute;
-  font-size: 22px;
-  animation: float 10s infinite linear;
-  pointer-events: none;
+  width: 30px;
+  height: 30px;
+  background: radial-gradient(circle, #00ffff, #ff00ff);
+  border-radius: 50%;
+  animation: float 6s linear infinite;
+  opacity: 0.7;
 }
-.sticker:nth-child(1){ top:10%; left:15%; animation-duration:12s;}
-.sticker:nth-child(2){ top:30%; left:80%; animation-duration:14s;}
-.sticker:nth-child(3){ top:70%; left:20%; animation-duration:11s;}
-.sticker:nth-child(4){ top:80%; left:70%; animation-duration:16s;}
 
-h1 { margin-bottom: 15px; z-index: 2; }
+@keyframes float {
+  0% { transform: translateY(100vh) rotate(0deg); }
+  50% { transform: translateY(50vh) rotate(180deg); }
+  100% { transform: translateY(-50px) rotate(360deg); }
+}
+
+/* Code Box */
+#box {
+  width: 320px;
+  height: 120px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+  text-align: center;
+  position: relative;
+  border: 4px solid;
+  border-image-slice: 1;
+  border-width: 4px;
+  border-image-source: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet, red);
+  background: #111;
+  box-shadow: 0 0 20px #00ffff50;
+}
+
+#code {
+  font-size: 28px;
+  letter-spacing: 6px;
+  color: #00ffcc;
+  margin: 10px 0;
+}
+
+button {
+  padding: 10px 15px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(90deg,#00ffff,#0088ff);
+  color: #000;
+}
 
 input {
   width: 280px;
@@ -50,132 +82,106 @@ input {
   border: none;
   background: #001020;
   color: #00ffff;
-  z-index: 2;
-}
-
-button {
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: none;
-  background: linear-gradient(90deg,#00ffff,#0088ff);
-  font-weight: bold;
-  cursor: pointer;
-  z-index: 2;
-}
-
-/* Rotating glowing frame */
-#frame {
-  margin-top: 20px;
-  width: 340px;
-  height: 180px;
-  border-radius: 16px;
-  position: relative;
-  display: none;
-}
-
-#frame::before {
-  content: "";
-  position: absolute;
-  inset: -3px;
-  border-radius: 18px;
-  background: linear-gradient(
-    45deg,
-    red, orange, yellow, lime, cyan, blue, violet, red
-  );
-  animation: spin 4s linear infinite;
-  filter: blur(6px);
-}
-
-#box {
-  position: absolute;
-  inset: 4px;
-  background: #111;
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1;
   text-align: center;
 }
 
-#code {
-  font-size: 30px;
-  letter-spacing: 6px;
-  margin: 10px 0;
-  color: #00ffcc;
+#status {
+  margin-top: 15px;
+  font-weight: bold;
 }
 
-small { opacity: 0.8; }
-
-#status {
-  margin-top: 12px;
-  z-index: 2;
+#timer {
+  font-size: 14px;
+  margin-top: 5px;
+  color: #ffcc00;
 }
 </style>
 </head>
-
 <body>
-
-<!-- Floating stickers -->
-<div class="sticker">💠</div>
-<div class="sticker">⚡</div>
-<div class="sticker">🤖</div>
-<div class="sticker">🔐</div>
 
 <h1>💠 MAXX~XMD Dashboard</h1>
 
 <input id="phone" placeholder="Enter WhatsApp number" />
-<button id="generate">Generate MAXX-XMD Code</button>
+<button id="generate">Generate Maxx XMD Code</button>
 
-<div id="frame">
-  <div id="box">
-    <p>Copy this code and link WhatsApp</p>
-    <div id="code">--------</div>
-    <button id="copy">Copy MAXX-XMD Code</button>
-    <small>Code expires in 5 minutes</small>
-  </div>
+<div id="box" style="display:none;">
+  <p>Copy this code and link WhatsApp</p>
+  <div id="code">--------</div>
+  <div id="timer">Expires in: 00:00</div>
+  <button id="copy">Copy Maxx XMD Code</button>
 </div>
 
 <p id="status"></p>
 
 <script>
-let currentCode = "";
+// Floating stickers
+for(let i=0;i<20;i++){
+  let s=document.createElement('div');
+  s.className='sticker';
+  s.style.left=Math.random()*100+'vw';
+  s.style.animationDuration=4+Math.random()*4+'s';
+  document.body.appendChild(s);
+}
 
-document.getElementById("generate").onclick = async () => {
-  const number = document.getElementById("phone").value.trim();
-  if (!number) return alert("Enter WhatsApp number");
+// Generate 8-character alphanumeric code
+function randomCode(len=8){
+  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code='';
+  for(let i=0;i<len;i++) code+=chars.charAt(Math.floor(Math.random()*chars.length));
+  return code;
+}
 
-  document.getElementById("status").innerText = "Generating code...";
+let currentCode="";
+let countdown;
 
-  try {
-    const res = await fetch("/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ number })
+function startTimer(seconds){
+  clearInterval(countdown);
+  const timerEl=document.getElementById('timer');
+  let remaining=seconds;
+  timerEl.innerText=`Expires in: ${remaining}s`;
+  countdown=setInterval(()=>{
+    remaining--;
+    if(remaining<=0){
+      clearInterval(countdown);
+      timerEl.innerText='Code expired';
+      currentCode="";
+      document.getElementById('code').innerText='--------';
+    } else {
+      timerEl.innerText=`Expires in: ${remaining}s`;
+    }
+  },1000);
+}
+
+document.getElementById("generate").onclick=async()=>{
+  const number=document.getElementById("phone").value.trim();
+  if(!number) return alert("Enter WhatsApp number");
+  document.getElementById("status").innerText="Generating code...";
+  try{
+    const res=await fetch("/generate",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ number })
     });
-
-    const data = await res.json();
-    if (!data.success) {
-      document.getElementById("status").innerText = data.error;
+    const data=await res.json();
+    if(!data.success){
+      document.getElementById("status").innerText=data.error;
       return;
     }
-
-    currentCode = data.code;
-    document.getElementById("code").innerText = data.code;
-    document.getElementById("frame").style.display = "block";
-    document.getElementById("status").innerText =
-      "✅ Code generated. Copy & link WhatsApp.";
-  } catch (e) {
-    document.getElementById("status").innerText = "❌ Server error";
+    currentCode=data.code || randomCode();
+    document.getElementById("code").innerText=currentCode;
+    document.getElementById("box").style.display="block";
+    startTimer(300); // 5 minutes
+    document.getElementById("status").innerText="✅ Code generated. Copy & link WhatsApp.";
+  }catch(e){
+    document.getElementById("status").innerText="❌ Server error";
+    console.error(e);
   }
 };
 
-document.getElementById("copy").onclick = () => {
-  if (!currentCode) return;
+document.getElementById("copy").onclick=()=>{
+  if(!currentCode) return;
   navigator.clipboard.writeText(currentCode);
-  alert("MAXX-XMD code copied ✅");
+  alert("✅ Maxx XMD code copied");
 };
 </script>
 
