@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💠 MAXX~XMD DASHBORD</title>
+<title>💠 MAXX~XMD Dashboard</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
 
@@ -89,7 +89,6 @@ input.plain-input {
   margin: 5px;
   background: #001020;
   color: #00ffff;
-  box-shadow: 0 0 10px #00ffff30;
 }
 
 input.plain-input::placeholder {
@@ -187,14 +186,19 @@ function randomCode(len=8){
 document.getElementById("generate").onclick = () => {
   const name = document.getElementById("name").value.trim();
   const number = document.getElementById("phone").value.trim();
-  if(!name) return alert("Enter your name");
-  if(!number) return alert("Enter your number");
 
-  currentCode = randomCode();
-  document.getElementById('code').innerText = currentCode;
-  document.getElementById('box').style.display = "flex";
-  startTimer(300); // 5 mins countdown
-  document.getElementById('status').innerText = "✅ Code generated. Copy & link WhatsApp.";
+  if(!name) return alert("Enter your name");
+  if(!number.startsWith('254')) return alert("Number not valid. Must start with country code (e.g., 254...)");
+
+  document.getElementById('status').innerText = "Generating...";
+  
+  setTimeout(() => {
+    currentCode = randomCode();
+    document.getElementById('code').innerText = currentCode;
+    document.getElementById('box').style.display = "flex";
+    startTimer(300); // 5 mins countdown
+    document.getElementById('status').innerText = "✅ Code generated. Copy & link WhatsApp.";
+  }, 1000); // simulate generating delay
 };
 
 // Copy code button
