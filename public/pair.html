@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>💠 MAXX~XMD Dashboard</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
 body {
   margin: 0;
-  font-family: Poppins, sans-serif;
+  font-family: 'Poppins', sans-serif;
   background: #000;
   color: #00fff2;
   display: flex;
@@ -18,17 +20,26 @@ body {
   padding: 20px;
 }
 
-/* Rainbow rotating border animation */
-@keyframes rotateBorder {
+/* Dashboard title */
+h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 36px;
+  background: linear-gradient(90deg, #00ffff, #ff00ff, #00ff00, #ffcc00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: hueRotate 5s linear infinite;
+}
+
+@keyframes hueRotate {
   0% { filter: hue-rotate(0deg); }
   100% { filter: hue-rotate(360deg); }
 }
 
 /* Code Box */
 #box {
-  width: 340px;
-  height: 170px;
-  border-radius: 14px;
+  width: 360px;
+  height: 180px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,11 +50,10 @@ body {
   border: 4px solid;
   border-image-slice: 1;
   border-width: 4px;
-  border-image-source: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet, red);
+  border-image-source: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
   background: #111;
   box-shadow: 0 0 30px #00ffff80;
   animation: rotateBorder 4s linear infinite;
-  transition: all 0.3s ease;
   padding: 15px 10px;
 }
 
@@ -53,7 +63,7 @@ body {
 }
 
 #code {
-  font-size: 34px;
+  font-size: 36px;
   letter-spacing: 6px;
   color: #00ffcc;
   font-weight: bold;
@@ -64,12 +74,13 @@ body {
   font-size: 14px;
   color: #ffcc00;
   font-weight: bold;
+  margin-bottom: 8px;
 }
 
-/* Rainbow glowing buttons */
+/* Buttons bold & glowing rainbow */
 button {
-  padding: 12px 18px;
-  border-radius: 8px;
+  padding: 14px 20px;
+  border-radius: 10px;
   border: none;
   font-weight: bold;
   cursor: pointer;
@@ -85,23 +96,9 @@ button:hover {
   box-shadow: 0 0 25px #00ffffcc;
 }
 
-/* Rainbow glow animation */
 @keyframes rainbowGlow {
   0% { filter: hue-rotate(0deg); }
   100% { filter: hue-rotate(360deg); }
-}
-
-input {
-  width: 280px;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: none;
-  background: #001020;
-  color: #00ffff;
-  text-align: center;
-  font-size: 16px;
-  box-shadow: 0 0 10px #00ffff30;
 }
 
 #status {
@@ -109,21 +106,32 @@ input {
   font-weight: bold;
   font-size: 14px;
 }
+
+/* Inputs removed from top, just placeholder text above box */
+#inputs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+#inputs p {
+  font-size: 16px;
+  color: #00ffff;
+  margin: 0;
+}
 </style>
 </head>
 <body>
 
 <h1>💠 MAXX~XMD Dashboard</h1>
 
-<!-- Name input -->
-<input id="name" placeholder="Enter your name e.g., Maxx" />
+<div id="inputs">
+  <p>Name: Maxx</p>
+  <p>Number: 254725979273</p>
+</div>
 
-<!-- WhatsApp number input -->
-<input id="phone" placeholder="Put your number starting with country code e.g., 254725979273" />
-
-<button id="generate">Generate Maxx XMD Code</button>
-
-<div id="box" style="display:none;">
+<div id="box">
   <div>
     <p>Copy this code and link WhatsApp</p>
     <div id="code">--------</div>
@@ -165,33 +173,11 @@ function randomCode(len=8){
   return code;
 }
 
-document.getElementById("generate").onclick=async()=>{
-  const number=document.getElementById("phone").value.trim();
-  const name=document.getElementById("name").value.trim();
-  if(!number) return alert("Enter WhatsApp number");
-  if(!name) return alert("Enter your name");
-  
-  document.getElementById("status").innerText="Generating code...";
-  try{
-    const res=await fetch("/generate",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ number, name })
-    });
-    const data=await res.json();
-    if(!data.success){
-      document.getElementById("status").innerText=data.error;
-      return;
-    }
-    currentCode=data.code || randomCode();
-    document.getElementById("code").innerText=currentCode;
-    document.getElementById("box").style.display="flex";
-    startTimer(300); // 5 minutes countdown
-    document.getElementById("status").innerText="✅ Code generated. Copy & link WhatsApp.";
-  }catch(e){
-    document.getElementById("status").innerText="❌ Server error";
-    console.error(e);
-  }
+// For demo, generate a new code automatically
+window.onload = ()=>{
+  currentCode = randomCode();
+  document.getElementById('code').innerText=currentCode;
+  startTimer(300); // 5 mins countdown
 };
 
 document.getElementById("copy").onclick=()=>{
