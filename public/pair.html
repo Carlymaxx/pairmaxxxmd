@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Maxx~XMD Dashboard</title>
+<title>MAXX~XMD Dashboard</title>
 <style>
 body {
   font-family: "Poppins", sans-serif;
@@ -35,6 +35,13 @@ h1 { margin-bottom: 15px; }
   box-shadow: 0 0 25px #00ffff50;
   margin-bottom: 15px;
 }
+#qrCode {
+  margin: 15px 0;
+  background: #000;
+  padding: 15px;
+  border-radius: 12px;
+  border: 2px solid #00ffff;
+}
 input { width: 280px; padding: 10px; margin-top: 10px; border: none; border-radius: 8px; background: #001020; color: #00ffff; }
 button { padding: 10px; margin-top: 10px; background: linear-gradient(90deg, #00ffff, #0088ff); border: none; border-radius: 8px; color: #000; font-weight: bold; cursor: pointer; }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -59,19 +66,13 @@ hr { width: 350px; margin: 20px 0; border: 1px solid #00ffff50; }
 <div id="chat"></div>
 
 <input type="text" id="phone" placeholder="Enter your WhatsApp number" />
-<button id="generate">Generate Code (DB Session)</button>
+<button id="generate">Maxx XMD Session</button>
 
-<input type="text" id="code" placeholder="Enter code received on WhatsApp" />
-<button id="verify">Verify Code</button>
-
-<hr />
-
-<button id="pairStart">Start Pair.js Session</button>
-<input type="text" id="pairCode" placeholder="Enter Pair.js code" />
-<button id="pairVerify">Verify Pair.js Session</button>
+<div id="qrCode"></div>
 
 <div id="status"></div>
 <div id="sessionId"></div>
+<button id="copySession" style="display:none;">Copy Session ID</button>
 
 <script>
 // ---- System Info ----
@@ -104,18 +105,18 @@ setInterval(getBotStatus, 5000); // check every 5s
 
 // ---- Inputs ----
 const phoneInput = document.getElementById("phone");
-const codeInput = document.getElementById("code");
-const pairCodeInput = document.getElementById("pairCode");
+const qrDiv = document.getElementById("qrCode");
 const sessionDiv = document.getElementById("sessionId");
-let currentRef = null;
+const copyBtn = document.getElementById("copySession");
 
-// ---- DB Session ----
+// ---- Maxx XMD Session ----
 document.getElementById("generate").onclick = async () => {
   const number = phoneInput.value.trim();
   if(!number) return alert("Enter your WhatsApp number!");
-  addMsg("user", `Requesting code for ${number}...`);
+  addMsg("user", `Requesting Maxx XMD session for ${number}...`);
   const btn = document.getElementById("generate");
   btn.disabled = true;
+  qrDiv.innerHTML = ""; // clear previous QR
   try {
     const res = await fetch("/generate", {
       method: "POST",
@@ -124,76 +125,22 @@ document.getElementById("generate").onclick = async () => {
     });
     const data = await res.json();
     addMsg("bot", data.message || data.error);
+    if(data.sessionId && data.qr) {
+      sessionDiv.innerText = `✅ Session ID: ${data.sessionId}`;
+      qrDiv.innerHTML = `<img src="${data.qr}" alt="QR Code" width="200" />`;
+      copyBtn.style.display = "inline-block";
+    }
   } catch(e) {
     addMsg("bot", "❌ Error sending request");
   }
   btn.disabled = false;
 };
 
-document.getElementById("verify").onclick = async () => {
-  const number = phoneInput.value.trim();
-  const code = codeInput.value.trim();
-  if(!number || !code) return alert("Enter number and code!");
-  addMsg("user", `Verifying code ${code} for ${number}...`);
-  const btn = document.getElementById("verify");
-  btn.disabled = true;
-  try {
-    const res = await fetch("/verify", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ number, code })
-    });
-    const data = await res.json();
-    addMsg("bot", data.message || "Verification complete!");
-    if(data.sessionId) sessionDiv.innerText = `✅ DB Session ID: ${data.sessionId}\nConnected!`;
-  } catch(e) {
-    addMsg("bot", "❌ Error verifying code");
-  }
-  btn.disabled = false;
-};
-
-// ---- Pair.js Session ----
-document.getElementById("pairStart").onclick = async () => {
-  const phone = phoneInput.value.trim();
-  if(!phone) return alert("Enter your WhatsApp number!");
-  addMsg("user", `Starting Pair.js session for ${phone}...`);
-  const btn = document.getElementById("pairStart");
-  btn.disabled = true;
-  try {
-    const res = await fetch("/start", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ phone })
-    });
-    const data = await res.json();
-    addMsg("bot", data.message || data.error);
-    if(data.ref) currentRef = data.ref;
-  } catch(e) {
-    addMsg("bot", "❌ Error starting Pair.js session");
-  }
-  btn.disabled = false;
-};
-
-document.getElementById("pairVerify").onclick = async () => {
-  const phone = phoneInput.value.trim();
-  const code = pairCodeInput.value.trim();
-  if(!phone || !code || !currentRef) return alert("Enter phone, code, and start Pair.js first!");
-  addMsg("user", `Verifying Pair.js code ${code} for ${phone}...`);
-  const btn = document.getElementById("pairVerify");
-  btn.disabled = true;
-  try {
-    const res = await fetch("/pair-verify", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ phone, code, ref: currentRef })
-    });
-    const data = await res.json();
-    addMsg("bot", data.message || data.error);
-    sessionDiv.innerText = `✅ Pair.js session ready for ${phone}`;
-  } catch(e) {
-    addMsg("bot", "❌ Error verifying Pair.js session");
-  }
-  btn.disabled = false;
+// ---- Copy Session ID ----
+copyBtn.onclick = () => {
+  const text = sessionDiv.innerText.replace("✅ Session ID: ", "");
+  navigator.clipboard.writeText(text);
+  alert("Session ID copied!");
 };
 </script>
 </body>
