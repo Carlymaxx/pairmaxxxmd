@@ -6,6 +6,17 @@
 <title>MAXX~XMD Dashboard</title>
 
 <style>
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+  50% { transform: translateY(-20px) rotate(180deg); opacity: 0.6; }
+  100% { transform: translateY(0px) rotate(360deg); opacity: 0.3; }
+}
+
 body {
   font-family: Poppins, sans-serif;
   background: radial-gradient(circle at center, #000015, #000);
@@ -14,8 +25,22 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 20px;
+  overflow: hidden;
 }
-h1 { margin-bottom: 15px; }
+
+/* Floating stickers */
+.sticker {
+  position: absolute;
+  font-size: 22px;
+  animation: float 10s infinite linear;
+  pointer-events: none;
+}
+.sticker:nth-child(1){ top:10%; left:15%; animation-duration:12s;}
+.sticker:nth-child(2){ top:30%; left:80%; animation-duration:14s;}
+.sticker:nth-child(3){ top:70%; left:20%; animation-duration:11s;}
+.sticker:nth-child(4){ top:80%; left:70%; animation-duration:16s;}
+
+h1 { margin-bottom: 15px; z-index: 2; }
 
 input {
   width: 280px;
@@ -25,6 +50,7 @@ input {
   border: none;
   background: #001020;
   color: #00ffff;
+  z-index: 2;
 }
 
 button {
@@ -35,42 +61,81 @@ button {
   background: linear-gradient(90deg,#00ffff,#0088ff);
   font-weight: bold;
   cursor: pointer;
+  z-index: 2;
 }
 
-#box {
-  width: 320px;
-  background: #111;
-  border: 2px solid #00ffff;
-  border-radius: 12px;
-  padding: 15px;
-  margin-top: 15px;
-  text-align: center;
+/* Rotating glowing frame */
+#frame {
+  margin-top: 20px;
+  width: 340px;
+  height: 180px;
+  border-radius: 16px;
+  position: relative;
   display: none;
 }
 
+#frame::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 18px;
+  background: linear-gradient(
+    45deg,
+    red, orange, yellow, lime, cyan, blue, violet, red
+  );
+  animation: spin 4s linear infinite;
+  filter: blur(6px);
+}
+
+#box {
+  position: absolute;
+  inset: 4px;
+  background: #111;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  text-align: center;
+}
+
 #code {
-  font-size: 28px;
+  font-size: 30px;
   letter-spacing: 6px;
-  margin: 12px 0;
+  margin: 10px 0;
   color: #00ffcc;
 }
 
 small { opacity: 0.8; }
+
+#status {
+  margin-top: 12px;
+  z-index: 2;
+}
 </style>
 </head>
 
 <body>
 
+<!-- Floating stickers -->
+<div class="sticker">💠</div>
+<div class="sticker">⚡</div>
+<div class="sticker">🤖</div>
+<div class="sticker">🔐</div>
+
 <h1>💠 MAXX~XMD Dashboard</h1>
 
 <input id="phone" placeholder="Enter WhatsApp number" />
-<button id="generate">Generate Maxx XMD Code</button>
+<button id="generate">Generate MAXX-XMD Code</button>
 
-<div id="box">
-  <p>Copy this code and link WhatsApp</p>
-  <div id="code">--------</div>
-  <button id="copy">Copy Code</button>
-  <small>Code expires in 5 minutes</small>
+<div id="frame">
+  <div id="box">
+    <p>Copy this code and link WhatsApp</p>
+    <div id="code">--------</div>
+    <button id="copy">Copy MAXX-XMD Code</button>
+    <small>Code expires in 5 minutes</small>
+  </div>
 </div>
 
 <p id="status"></p>
@@ -99,7 +164,7 @@ document.getElementById("generate").onclick = async () => {
 
     currentCode = data.code;
     document.getElementById("code").innerText = data.code;
-    document.getElementById("box").style.display = "block";
+    document.getElementById("frame").style.display = "block";
     document.getElementById("status").innerText =
       "✅ Code generated. Copy & link WhatsApp.";
   } catch (e) {
@@ -110,7 +175,7 @@ document.getElementById("generate").onclick = async () => {
 document.getElementById("copy").onclick = () => {
   if (!currentCode) return;
   navigator.clipboard.writeText(currentCode);
-  alert("Code copied successfully");
+  alert("MAXX-XMD code copied ✅");
 };
 </script>
 
