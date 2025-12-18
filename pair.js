@@ -13,6 +13,8 @@ const Pino = require("pino");
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
 
 const sessions = {}; // active sockets
 
@@ -48,6 +50,13 @@ async function createSession(number) {
   sessions[number] = sock;
   return sock;
 }
+const path = require("path");
+
+// Serve dashboard
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "pair.html"));
+});
+
 
 /* 🔢 REAL PAIRING CODE */
 app.post("/generate", async (req, res) => {
