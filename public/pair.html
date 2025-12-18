@@ -77,7 +77,33 @@ h1 {
   margin-bottom: 8px;
 }
 
-/* Buttons bold & glowing rainbow */
+/* Inputs as rainbow buttons */
+input.glow-input {
+  width: 220px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  text-align: center;
+  font-size: 16px;
+  background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+  color: #000;
+  box-shadow: 0 0 15px #00ffffaa;
+  animation: rainbowGlow 3s linear infinite;
+  margin: 5px;
+}
+
+input.glow-input::placeholder {
+  color: #000;
+  font-weight: bold;
+}
+
+@keyframes rainbowGlow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* Copy button */
 button {
   padding: 14px 20px;
   border-radius: 10px;
@@ -89,6 +115,7 @@ button {
   transition: all 0.3s ease;
   box-shadow: 0 0 15px #00ffffaa;
   animation: rainbowGlow 3s linear infinite;
+  margin-top: 8px;
 }
 
 button:hover {
@@ -96,29 +123,10 @@ button:hover {
   box-shadow: 0 0 25px #00ffffcc;
 }
 
-@keyframes rainbowGlow {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
-}
-
 #status {
   margin-top: 15px;
   font-weight: bold;
   font-size: 14px;
-}
-
-/* Inputs removed from top, just placeholder text above box */
-#inputs {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
-
-#inputs p {
-  font-size: 16px;
-  color: #00ffff;
-  margin: 0;
 }
 </style>
 </head>
@@ -126,9 +134,10 @@ button:hover {
 
 <h1>💠 MAXX~XMD Dashboard</h1>
 
+<!-- Editable Name and Number as rainbow buttons -->
 <div id="inputs">
-  <p>Name: Maxx</p>
-  <p>Number: 254725979273</p>
+  <input class="glow-input" type="text" id="name" placeholder="Name e.g., Maxx" />
+  <input class="glow-input" type="text" id="phone" placeholder="Number e.g., 254725979273" />
 </div>
 
 <div id="box">
@@ -173,7 +182,7 @@ function randomCode(len=8){
   return code;
 }
 
-// For demo, generate a new code automatically
+// Generate new code automatically
 window.onload = ()=>{
   currentCode = randomCode();
   document.getElementById('code').innerText=currentCode;
