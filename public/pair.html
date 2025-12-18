@@ -27,12 +27,12 @@ body {
 /* Code Box */
 #box {
   width: 340px;
-  height: 140px;
+  height: 160px;
   border-radius: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   margin-top: 30px;
   text-align: center;
   position: relative;
@@ -44,6 +44,7 @@ body {
   box-shadow: 0 0 30px #00ffff80;
   animation: rotateBorder 4s linear infinite;
   transition: all 0.3s ease;
+  padding: 15px 10px;
 }
 
 #box:hover {
@@ -55,14 +56,18 @@ body {
   font-size: 34px;
   letter-spacing: 6px;
   color: #00ffcc;
-  margin: 10px 0;
   font-weight: bold;
   text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffff50;
 }
 
+#timer {
+  font-size: 14px;
+  color: #ffcc00;
+  font-weight: bold;
+}
+
 button {
   padding: 12px 18px;
-  margin-top: 8px;
   border-radius: 8px;
   border: none;
   font-weight: bold;
@@ -96,13 +101,6 @@ input {
   font-weight: bold;
   font-size: 14px;
 }
-
-#timer {
-  font-size: 14px;
-  margin-top: 4px;
-  color: #ffcc00;
-  font-weight: bold;
-}
 </style>
 </head>
 <body>
@@ -113,9 +111,11 @@ input {
 <button id="generate">Generate Maxx XMD Code</button>
 
 <div id="box" style="display:none;">
-  <p>Copy this code and link WhatsApp</p>
-  <div id="code">--------</div>
-  <div id="timer">Expires in: 00:00</div>
+  <div>
+    <p>Copy this code and link WhatsApp</p>
+    <div id="code">--------</div>
+    <div id="timer">Expires in: 00:00</div>
+  </div>
   <button id="copy">Copy Maxx XMD Code</button>
 </div>
 
@@ -169,7 +169,7 @@ document.getElementById("generate").onclick=async()=>{
     }
     currentCode=data.code || randomCode();
     document.getElementById("code").innerText=currentCode;
-    document.getElementById("box").style.display="block";
+    document.getElementById("box").style.display="flex";
     startTimer(300); // 5 minutes countdown
     document.getElementById("status").innerText="✅ Code generated. Copy & link WhatsApp.";
   }catch(e){
@@ -181,9 +181,6 @@ document.getElementById("generate").onclick=async()=>{
 document.getElementById("copy").onclick=()=>{
   if(!currentCode) return;
   navigator.clipboard.writeText(currentCode);
-
-  
-  
   alert("✅ MAXX XMD code copied");
 };
 </script>
