@@ -1,90 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MAXX~XMD Dashboard</title>
+
 <style>
-body { font-family: "Poppins", sans-serif; background: #000; color: #00fff2; display: flex; flex-direction: column; align-items: center; padding: 20px; min-height: 100vh; }
-h1 { margin-bottom: 20px; }
-input { width: 280px; padding: 10px; margin-top: 10px; border: none; border-radius: 8px; background: #001020; color: #00ffff; }
-button { padding: 10px; margin-top: 10px; background: linear-gradient(90deg, #00ffff, #0088ff); border: none; border-radius: 8px; color: #000; font-weight: bold; cursor: pointer; }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-#codeDisplay, #sessionInfo { margin-top: 15px; text-align: center; }
+body {
+  font-family: Poppins, sans-serif;
+  background: radial-gradient(circle at center, #000015, #000);
+  color: #00fff2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+h1 { margin-bottom: 15px; }
+
+input {
+  width: 280px;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #001020;
+  color: #00ffff;
+}
+
+button {
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(90deg,#00ffff,#0088ff);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#box {
+  width: 320px;
+  background: #111;
+  border: 2px solid #00ffff;
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+  text-align: center;
+}
+
+#code {
+  font-size: 26px;
+  letter-spacing: 6px;
+  margin-top: 10px;
+  color: #00ffcc;
+}
+
+small { opacity: 0.8; }
 </style>
 </head>
+
 <body>
 
 <h1>💠 MAXX~XMD Dashboard</h1>
 
-<input type="text" id="phone" placeholder="Enter your WhatsApp number" />
-<button id="generate">Generate MAXX XMD Code</button>
+<input id="phone" placeholder="Enter WhatsApp number" />
+<button id="generate">Generate Maxx XMD Code</button>
 
-<div id="codeDisplay"></div>
+<div id="box" style="display:none;">
+  <p>Copy this code and link WhatsApp</p>
+  <div id="code"></div>
+  <button onclick="copyCode()">Copy Code</button>
+</div>
 
-<input type="text" id="code" placeholder="Enter code sent via WhatsApp" />
-<button id="verify">Verify Code</button>
+<br>
 
-<div id="sessionInfo"></div>
+<input id="verifyCode" placeholder="Paste code after linking" />
+<button id="verify">Verify & Send Session</button>
+
+<p id="status"></p>
 
 <script>
-const phoneInput = document.getElementById("phone");
-const codeInput = document.getElementById("code");
-const codeDisplay = document.getElementById("codeDisplay");
-const sessionInfo = document.getElementById("sessionInfo");
+let currentCode = "";
 
-// ---- Generate 6-digit code ----
 document.getElementById("generate").onclick = async () => {
-    const number = phoneInput.value.trim();
-    if(!number) return alert("Enter your WhatsApp number!");
+  const number = phone.value.trim();
+  if (!number) return alert("Enter number");
 
-    const btn = document.getElementById("generate");
-    btn.disabled = true;
-    codeDisplay.innerHTML = "";
+  const res = await fetch("/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ number })
+  });
 
-    try {
-        const res = await fetch("/generate", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ number })
-        });
-        const data = await res.json();
+  const data = await res.json();
+  if (!data.success) return alert(data.error);
 
-        if(data.success) {
-            codeDisplay.innerHTML = `<b>6-digit Code:</b> ${data.code} <br>Copy this code and send it to your WhatsApp number manually.`;
-        } else {
-            alert(data.error || "Failed to generate code");
-        }
-    } catch(e) { alert("❌ Error generating code"); }
-
-    btn.disabled = false;
+  currentCode = data.code;
+  document.getElementById("code").innerText = data.code;
+  document.getElementById("box").style.display = "block";
 };
 
-// ---- Verify code ----
+function copyCode() {
+  navigator.clipboard.writeText(currentCode);
+  alert("Code copied");
+}
+
 document.getElementById("verify").onclick = async () => {
-    const number = phoneInput.value.trim();
-    const code = codeInput.value.trim();
-    if(!number || !code) return alert("Enter number and code!");
+  const number = phone.value.trim();
+  const code = verifyCode.value.trim();
 
-    const btn = document.getElementById("verify");
-    btn.disabled = true;
+  if (!number || !code) return alert("Missing data");
 
-    try {
-        const res = await fetch("/verify", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ number, code })
-        });
-        const data = await res.json();
+  const res = await fetch("/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ number, code })
+  });
 
-        if(data.success) {
-            sessionInfo.innerHTML = `✅ Session linked! Session ID sent to WhatsApp number: <b>${number}</b>`;
-        } else {
-            alert(data.error || "Invalid code");
-        }
-    } catch(e) { alert("❌ Error verifying code"); }
-
-    btn.disabled = false;
+  const data = await res.json();
+  document.getElementById("status").innerText =
+    data.success ? "✅ Session ID sent to WhatsApp" : data.error;
 };
 </script>
 
