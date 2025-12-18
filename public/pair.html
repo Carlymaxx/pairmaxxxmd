@@ -15,32 +15,20 @@ body {
   align-items: center;
   justify-content: flex-start;
   min-height: 100vh;
-  overflow: hidden;
   padding: 20px;
 }
 
-/* Floating stickers */
-.sticker {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  background: radial-gradient(circle, #00ffff, #ff00ff);
-  border-radius: 50%;
-  animation: float 6s linear infinite;
-  opacity: 0.7;
-}
-
-@keyframes float {
-  0% { transform: translateY(100vh) rotate(0deg); }
-  50% { transform: translateY(50vh) rotate(180deg); }
-  100% { transform: translateY(-50px) rotate(360deg); }
+/* Rainbow rotating border animation */
+@keyframes rotateBorder {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
 }
 
 /* Code Box */
 #box {
-  width: 320px;
-  height: 120px;
-  border-radius: 12px;
+  width: 340px;
+  height: 140px;
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,47 +41,67 @@ body {
   border-width: 4px;
   border-image-source: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet, red);
   background: #111;
-  box-shadow: 0 0 20px #00ffff50;
+  box-shadow: 0 0 30px #00ffff80;
+  animation: rotateBorder 4s linear infinite;
+  transition: all 0.3s ease;
+}
+
+#box:hover {
+  box-shadow: 0 0 50px #00ffffaa;
+  transform: scale(1.05);
 }
 
 #code {
-  font-size: 28px;
+  font-size: 34px;
   letter-spacing: 6px;
   color: #00ffcc;
   margin: 10px 0;
+  font-weight: bold;
+  text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffff50;
 }
 
 button {
-  padding: 10px 15px;
-  margin-top: 5px;
+  padding: 12px 18px;
+  margin-top: 8px;
   border-radius: 8px;
   border: none;
   font-weight: bold;
   cursor: pointer;
   background: linear-gradient(90deg,#00ffff,#0088ff);
   color: #000;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px #00ffff50;
+}
+
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px #00ffffaa;
 }
 
 input {
   width: 280px;
-  padding: 10px;
+  padding: 12px;
   margin-top: 10px;
   border-radius: 8px;
   border: none;
   background: #001020;
   color: #00ffff;
   text-align: center;
+  font-size: 16px;
+  box-shadow: 0 0 10px #00ffff30;
 }
 
 #status {
   margin-top: 15px;
   font-weight: bold;
+  font-size: 14px;
 }
 
 #timer {
   font-size: 14px;
-  margin-top: 5px;
+  margin-top: 4px;
   color: #ffcc00;
+  font-weight: bold;
 }
 </style>
 </head>
@@ -114,26 +122,10 @@ input {
 <p id="status"></p>
 
 <script>
-// Floating stickers
-for(let i=0;i<20;i++){
-  let s=document.createElement('div');
-  s.className='sticker';
-  s.style.left=Math.random()*100+'vw';
-  s.style.animationDuration=4+Math.random()*4+'s';
-  document.body.appendChild(s);
-}
-
-// Generate 8-character alphanumeric code
-function randomCode(len=8){
-  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code='';
-  for(let i=0;i<len;i++) code+=chars.charAt(Math.floor(Math.random()*chars.length));
-  return code;
-}
-
 let currentCode="";
 let countdown;
 
+// Start countdown timer
 function startTimer(seconds){
   clearInterval(countdown);
   const timerEl=document.getElementById('timer');
@@ -150,6 +142,14 @@ function startTimer(seconds){
       timerEl.innerText=`Expires in: ${remaining}s`;
     }
   },1000);
+}
+
+// Generate random alphanumeric code (8 chars)
+function randomCode(len=8){
+  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code='';
+  for(let i=0;i<len;i++) code+=chars.charAt(Math.floor(Math.random()*chars.length));
+  return code;
 }
 
 document.getElementById("generate").onclick=async()=>{
@@ -170,7 +170,7 @@ document.getElementById("generate").onclick=async()=>{
     currentCode=data.code || randomCode();
     document.getElementById("code").innerText=currentCode;
     document.getElementById("box").style.display="block";
-    startTimer(300); // 5 minutes
+    startTimer(300); // 5 minutes countdown
     document.getElementById("status").innerText="✅ Code generated. Copy & link WhatsApp.";
   }catch(e){
     document.getElementById("status").innerText="❌ Server error";
