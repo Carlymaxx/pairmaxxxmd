@@ -1,122 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAXX~XMD Dashboard</title>
-<style>
-body {
-  font-family: "Poppins", sans-serif;
-  background: radial-gradient(circle at center, #000015 0%, #000000 100%);
-  color: #00fff2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  min-height: 100vh;
-}
-h1 { margin-bottom: 15px; }
-#info {
-  width: 350px;
-  background: #111;
-  border: 2px solid #00ffff;
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 20px;
-  box-shadow: 0 0 20px #00ffff50;
-}
-#chat {
-  width: 350px;
-  height: 300px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 12px;
-  padding: 15px;
-  overflow-y: auto;
-  box-shadow: 0 0 25px #00ffff50;
-  margin-bottom: 15px;
-}
-#qrCode {
-  margin: 15px 0;
-  background: #000;
-  padding: 15px;
-  border-radius: 12px;
-  border: 2px solid #00ffff;
-}
-input { width: 280px; padding: 10px; margin-top: 10px; border: none; border-radius: 8px; background: #001020; color: #00ffff; }
-button { padding: 10px; margin-top: 10px; background: linear-gradient(90deg, #00ffff, #0088ff); border: none; border-radius: 8px; color: #000; font-weight: bold; cursor: pointer; }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-.msg { margin: 5px 0; }
-.user { text-align: right; color: #00bfff; }
-.bot { text-align: left; color: #00ffcc; }
-#status, #sessionId { margin-top: 10px; text-align: center; }
-hr { width: 350px; margin: 20px 0; border: 1px solid #00ffff50; }
-</style>
-</head>
-<body>
+<input type="text" id="phone" placeholder="Enter WhatsApp number" />
+<button id="generate">Generate Maxx XMD Code</button>
 
-<h1>💠 Maxx~XMD Dashboard</h1>
+<input type="text" id="code" placeholder="Enter code from WhatsApp" />
+<button id="verify">Verify Code</button>
 
-<div id="info">
-  <p><b>OS:</b> <span id="os"></span></p>
-  <p><b>Browser:</b> <span id="browser"></span></p>
-  <p><b>Engine:</b> <span id="device"></span></p>
-  <p><b>Status:</b> <span id="botStatus" style="color: yellow">Loading...</span></p>
-</div>
-
-<div id="chat"></div>
-
-<input type="text" id="phone" placeholder="Enter your WhatsApp number" />
-<button id="generate">Maxx XMD Session</button>
-
-<div id="qrCode"></div>
-
-<div id="status"></div>
-<div id="sessionId"></div>
-<button id="copySession" style="display:none;">Copy Session ID</button>
+<div id="sessionInfo"></div>
 
 <script>
-// ---- System Info ----
-document.getElementById("os").innerText = navigator.platform;
-document.getElementById("browser").innerText = navigator.userAgent.split(') ')[0].split(' (')[1] || navigator.userAgent;
-document.getElementById("device").innerText = navigator.vendor || "Unknown";
-
-// ---- Chat helper ----
-const chat = document.getElementById("chat");
-function addMsg(who, text) {
-  const div = document.createElement("div");
-  div.className = "msg " + who;
-  div.innerText = text;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-// ---- Bot status ----
-async function getBotStatus() {
-  try {
-    const res = await fetch("/status");
-    const data = await res.json();
-    document.getElementById("botStatus").innerText = data.connected ? "✅ Connected" : "❌ Disconnected";
-  } catch {
-    document.getElementById("botStatus").innerText = "❌ Error";
-  }
-}
-getBotStatus();
-setInterval(getBotStatus, 5000); // check every 5s
-
-// ---- Inputs ----
 const phoneInput = document.getElementById("phone");
-const qrDiv = document.getElementById("qrCode");
-const sessionDiv = document.getElementById("sessionId");
-const copyBtn = document.getElementById("copySession");
+const codeInput = document.getElementById("code");
+const sessionInfo = document.getElementById("sessionInfo");
 
-// ---- Maxx XMD Session ----
 document.getElementById("generate").onclick = async () => {
   const number = phoneInput.value.trim();
-  if(!number) return alert("Enter your WhatsApp number!");
-  addMsg("user", `Requesting Maxx XMD session for ${number}...`);
+  if(!number) return alert("Enter WhatsApp number");
   const btn = document.getElementById("generate");
   btn.disabled = true;
-  qrDiv.innerHTML = ""; // clear previous QR
+
   try {
     const res = await fetch("/generate", {
       method: "POST",
@@ -124,24 +24,29 @@ document.getElementById("generate").onclick = async () => {
       body: JSON.stringify({ number })
     });
     const data = await res.json();
-    addMsg("bot", data.message || data.error);
-    if(data.sessionId && data.qr) {
-      sessionDiv.innerText = `✅ Session ID: ${data.sessionId}`;
-      qrDiv.innerHTML = `<img src="${data.qr}" alt="QR Code" width="200" />`;
-      copyBtn.style.display = "inline-block";
-    }
-  } catch(e) {
-    addMsg("bot", "❌ Error sending request");
-  }
+    if(data.success) sessionInfo.innerHTML = `✅ Code sent to WhatsApp`;
+    else alert(data.error || "Failed to generate code");
+  } catch(e) { alert("❌ Error generating code"); }
   btn.disabled = false;
 };
 
-// ---- Copy Session ID ----
-copyBtn.onclick = () => {
-  const text = sessionDiv.innerText.replace("✅ Session ID: ", "");
-  navigator.clipboard.writeText(text);
-  alert("Session ID copied!");
+document.getElementById("verify").onclick = async () => {
+  const number = phoneInput.value.trim();
+  const code = codeInput.value.trim();
+  if(!number || !code) return alert("Enter number and code");
+  const btn = document.getElementById("verify");
+  btn.disabled = true;
+
+  try {
+    const res = await fetch("/verify", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ number, code })
+    });
+    const data = await res.json();
+    if(data.success) sessionInfo.innerHTML = `✅ Session linked! ID: ${data.sessionId}`;
+    else alert(data.error || "Invalid code");
+  } catch(e) { alert("❌ Error verifying code"); }
+  btn.disabled = false;
 };
 </script>
-</body>
-</html>
